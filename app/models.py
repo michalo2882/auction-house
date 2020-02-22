@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User
 from django.db import models, transaction
 
+from app.errors import FailedToCreateListingError
+
 
 class Wallet(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -44,6 +46,21 @@ class InventoryItem(models.Model):
 
     def description(self):
         return f'{self.count} of "{self.item}"'
+
+    @transaction.atomic
+    def make_sell_listing(self, count, price):
+        if self.count < count:
+            raise FailedToCreateListingError("User does not have enough items")
+
+        listing = Listing.objects.filter(item=self.item, direction=Listing.Direction.BUY).order_by('-price').first()
+        if listing and listing.price >= price:
+            raise FailedToCreateListingError("Cannot make listing when sell price is lower than highest buy listing")
+
+        self.count -= count
+        self.save()
+
+        return Listing.objects.create(item=self.item, count=count, price=price, direction=Listing.Direction.SELL,
+                                      submitter=self.user)
 
     class Meta:
         constraints = [
