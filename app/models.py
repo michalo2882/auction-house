@@ -49,3 +49,20 @@ class InventoryItem(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['user', 'item'], name='unique-user-item')
         ]
+
+
+class Listing(models.Model):
+    Direction = models.IntegerChoices('Direction', 'BUY SELL')
+    int_to_direction = {k: v for k, v in Direction.choices}
+
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    count = models.IntegerField()
+    price = models.IntegerField()
+    direction = models.IntegerField(choices=Direction.choices)
+    submitter = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.item.name}-{self.count}-{self.price}-{self.int_to_direction[self.direction]}-{self.submitter}'
+
+    def description(self):
+        return f'{self.count} of "{self.item}" for {self.price} coins'
