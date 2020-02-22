@@ -85,6 +85,22 @@ class Item(models.Model):
             'coins_spent': coins_spent
         }
 
+    @transaction.atomic
+    def make_buy_listing(self, user: User, count, price):
+        wallet = Wallet.get_users_wallet(user)
+
+        if wallet.coins < price:
+            raise FailedToCreateListingError("User does not have enough money")
+
+        listing = Listing.objects.filter(item=self, direction=Listing.Direction.SELL).order_by('price').first()
+        if listing and listing.price <= price:
+            raise FailedToCreateListingError("Cannot make listing when buy price is higher than lowest sell listing")
+
+        wallet.spend(price)
+
+        return Listing.objects.create(item=self, count=count, price=price, direction=Listing.Direction.BUY,
+                                      submitter=user)
+
 
 class InventoryItem(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
