@@ -3,4 +3,37 @@
 {% block content %}
     <h3>Welcome, {{ user }}</h3>
     <p>You have <strong>{{ wallet.coins }}</strong> coins.</p>
+
+    <h3>Your sell listings:</h3>
+    {% if sell_listings %}
+        <ul>
+            {% for listing in sell_listings %}
+                <li>{{ listing.description }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No listings</p>
+    {% endif %}
+
+    <h3>Your buy listings:</h3>
+    {% if buy_listings %}
+        <ul>
+            {% for listing in buy_listings %}
+                <li>{{ listing.description }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No listings</p>
+    {% endif %}
+
+        <h3>Your inventory:</h3>
+    {% if inventory_items %}
+        <ul>
+            {% for inventory_item in inventory_items %}
+                <li>{{ inventory_item.description }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No items</p>
+    {% endif %}
 {% endblock %}
