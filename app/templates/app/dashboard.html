@@ -26,11 +26,13 @@
         <p>No listings</p>
     {% endif %}
 
-        <h3>Your inventory:</h3>
+    <h3>Your inventory:</h3>
     {% if inventory_items %}
         <ul>
             {% for inventory_item in inventory_items %}
-                <li>{{ inventory_item.description }}</li>
+                <li>{{ inventory_item.description }} <a class="btn btn-sm btn-light"
+                                                        href="{% url 'app:inventory_sell' inventory_item.pk %}">Sell</a>
+                </li>
             {% endfor %}
         </ul>
     {% else %}

@@ -1,0 +1,23 @@
+<p>Item: {{ item }}</p>
+
+<h3>Sell listings:</h3>
+{% if sell_listings %}
+    <ul>
+        {% for listing in sell_listings %}
+            <li>{{ listing.description }}</li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No listings</p>
+{% endif %}
+
+<h3>Buy listings:</h3>
+{% if buy_listings %}
+    <ul>
+        {% for listing in buy_listings %}
+            <li>{{ listing.description }}</li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No listings</p>
+{% endif %}

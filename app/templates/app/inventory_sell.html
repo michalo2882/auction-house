@@ -1,0 +1,23 @@
+{% extends 'app/base.html' %}
+
+{% block content %}
+    {% include 'app/item_listings_fragment.html' %}
+
+    {% if error_message %}
+        <div class="alert alert-danger" role="alert">{{ error_message }}</div>
+    {% endif %}
+
+    <p>You have <strong>{{ inventory_item.description }}</strong></p>
+    <h3>Make sell listing</h3>
+    <p>Price must be higher, that the lowest BUY listing</p>
+    <form action="{% url 'app:inventory_sell' inventory_item.pk %}" method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <input type="number" class="form-control" id="listing_count" name="count" placeholder="Count">
+        </div>
+        <div class="form-group">
+            <input type="number" class="form-control" id="listing_count" name="price" placeholder="Price">
+        </div>
+        <input class="btn btn-primary" type="submit" value="Create">
+    </form>
+{% endblock %}
