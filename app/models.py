@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from django.db import models
+from django.db import models, transaction
 
 
 class Wallet(models.Model):
@@ -15,3 +15,37 @@ class Wallet(models.Model):
             return Wallet.objects.get(user=user)
         except Wallet.DoesNotExist:
             return Wallet.objects.create(user=user)
+
+
+class Item(models.Model):
+    name = models.CharField(max_length=200, unique=True)
+
+    def __str__(self):
+        return self.name
+
+    @transaction.atomic
+    def add_to_user_inventory(self, user: User, count):
+        try:
+            inventory_item = InventoryItem.objects.get(user=user, item=self)
+            inventory_item.count += count
+            inventory_item.save()
+            return inventory_item
+        except InventoryItem.DoesNotExist:
+            return InventoryItem.objects.create(user=user, item=self, count=count)
+
+
+class InventoryItem(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    count = models.IntegerField()
+
+    def __str__(self):
+        return f'{self.user}-{self.item}-{self.count}'
+
+    def description(self):
+        return f'{self.count} of "{self.item}"'
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'item'], name='unique-user-item')
+        ]
