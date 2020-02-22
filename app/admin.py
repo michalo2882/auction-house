@@ -1,3 +1,7 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import *
+
+admin.site.register(Wallet)
+admin.site.register(Item)
+admin.site.register(InventoryItem)
