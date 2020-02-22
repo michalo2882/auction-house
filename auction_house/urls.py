@@ -21,7 +21,9 @@ from auction_house import settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('django.contrib.auth.urls')),
+    path('api-auth/', include('rest_framework.urls')),
 
+    path('api/v1/', include('app.rest.urls')),
     path('', include('app.urls')),
 ]
 
