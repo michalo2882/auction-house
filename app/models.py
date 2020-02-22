@@ -1,7 +1,8 @@
 from django.contrib.auth.models import User
 from django.db import models, transaction
 
-from app.errors import FailedToCreateListingError
+from app.errors import FailedToCreateListingError, FailedToMakeTransactionError, CannotAffordError, \
+    InvalidTransactionError
 
 
 class Wallet(models.Model):
@@ -17,6 +18,20 @@ class Wallet(models.Model):
             return Wallet.objects.get(user=user)
         except Wallet.DoesNotExist:
             return Wallet.objects.create(user=user)
+
+    @transaction.atomic
+    def add(self, coins):
+        self.refresh_from_db()
+        self.coins += coins
+        self.save()
+
+    @transaction.atomic
+    def spend(self, coins):
+        self.refresh_from_db()
+        if coins > self.coins:
+            raise CannotAffordError()
+        self.coins -= coins
+        self.save()
 
 
 class Item(models.Model):
@@ -34,6 +49,41 @@ class Item(models.Model):
             return inventory_item
         except InventoryItem.DoesNotExist:
             return InventoryItem.objects.create(user=user, item=self, count=count)
+
+    @transaction.atomic
+    def make_buy_transaction(self, user: User, count):
+        wallet = Wallet.get_users_wallet(user)
+        remaining_purchase_count = count
+        coins_spent = 0
+        listings = Listing.objects.filter(item=self, direction=Listing.Direction.SELL).order_by('price')
+        if not listings:
+            raise FailedToMakeTransactionError('No listings')
+        for listing in listings:
+            if listing.count > remaining_purchase_count:
+                take = remaining_purchase_count
+            else:
+                take = listing.count
+
+            price = take * listing.price
+
+            try:
+                wallet.spend(price)
+            except CannotAffordError:
+                # TODO: make partial purchase
+                break
+
+            coins_spent += price
+            remaining_purchase_count -= take
+
+            listing.process_purchase(take)
+
+        items_purchased = count - remaining_purchase_count
+        if items_purchased:
+            self.add_to_user_inventory(user, items_purchased)
+        return {
+            'items_purchased': items_purchased,
+            'coins_spent': coins_spent
+        }
 
 
 class InventoryItem(models.Model):
@@ -83,3 +133,17 @@ class Listing(models.Model):
 
     def description(self):
         return f'{self.count} of "{self.item}" for {self.price} coins'
+
+    @transaction.atomic
+    def process_purchase(self, count):
+        if self.direction != Listing.Direction.SELL:
+            raise InvalidTransactionError()
+        if count > self.count:
+            raise ValueError("Cannot take more items than listed")
+        wallet = Wallet.get_users_wallet(self.submitter)
+        wallet.add(self.price * count)
+        self.count -= count
+        if not self.count:
+            self.delete()
+        else:
+            self.save()
