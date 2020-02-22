@@ -4,7 +4,7 @@
     <h3>Items</h3>
     <ul>
         {% for item in object_list %}
-            <li>{{ item }}</li>
+            <li>{{ item }} <a class="btn btn-sm btn-light" href="{% url 'app:item_buy' item.pk %}">Buy</a></li>
         {% endfor %}
     </ul>
 {% endblock %}

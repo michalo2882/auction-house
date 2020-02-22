@@ -30,8 +30,9 @@
     {% if inventory_items %}
         <ul>
             {% for inventory_item in inventory_items %}
-                <li>{{ inventory_item.description }} <a class="btn btn-sm btn-light"
-                                                        href="{% url 'app:inventory_sell' inventory_item.pk %}">Sell</a>
+                <li>{{ inventory_item.description }}
+                    <a class="btn btn-sm btn-light" href="{% url 'app:inventory_sell' inventory_item.pk %}">Sell</a>
+                    <a class="btn btn-sm btn-light" href="{% url 'app:item_buy' inventory_item.item.pk %}">Buy more</a>
                 </li>
             {% endfor %}
         </ul>
