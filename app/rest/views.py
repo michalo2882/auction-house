@@ -38,6 +38,17 @@ def inventory_sell(request, pk):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(['GET'])
+def item_listings(request, pk):
+    item = get_object_or_404(Item, pk=pk)
+    return Response({
+        'buyListings': ListingSerializer(
+            Listing.objects.filter(item=item, direction=Listing.Direction.BUY).order_by('-price'), many=True).data,
+        'sellListings': ListingSerializer(
+            Listing.objects.filter(item=item, direction=Listing.Direction.SELL).order_by('price'), many=True).data,
+    })
+
+
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def item_create_buy_listing(request, pk):
