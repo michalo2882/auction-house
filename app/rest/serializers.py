@@ -31,3 +31,8 @@ class ListingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Listing
         fields = ['item', 'count', 'price', 'direction', 'submitter', 'description']
+
+
+class SellRequestSerializer(serializers.Serializer):
+    count = serializers.IntegerField()
+    price = serializers.IntegerField()

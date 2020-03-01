@@ -1,9 +1,9 @@
-from rest_framework import permissions, viewsets, mixins
+from rest_framework import permissions, mixins, status
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from app.models import *
 from app.rest.serializers import *
 
 
@@ -20,6 +20,19 @@ def dashboard(request):
         'buyListings': ListingSerializer(buy_listings, many=True).data,
         'inventory': InventoryItemSerializer(inventory_items, many=True).data,
     })
+
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def inventory_sell(request, pk):
+    inventory_item = get_object_or_404(InventoryItem, pk=pk)
+    serializer = SellRequestSerializer(data=request.data)
+    if serializer.is_valid():
+        listing = inventory_item.make_sell_listing(serializer.data['count'],
+                                                   serializer.data['price'])
+        return Response(ListingSerializer(listing).data)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ItemViewSet(mixins.RetrieveModelMixin,
