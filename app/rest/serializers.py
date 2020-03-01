@@ -38,3 +38,7 @@ class ListingSerializer(serializers.ModelSerializer):
 class ListingRequestSerializer(serializers.Serializer):
     count = serializers.IntegerField()
     price = serializers.IntegerField()
+
+
+class ItemBuyRequestSerializer(serializers.Serializer):
+    count = serializers.IntegerField()

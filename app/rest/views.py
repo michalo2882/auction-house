@@ -1,5 +1,4 @@
-from django.views.decorators.csrf import csrf_exempt
-from rest_framework import permissions, mixins, status, viewsets
+from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
@@ -38,6 +37,35 @@ def inventory_sell(request, pk):
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def item_create_buy_listing(request, pk):
+    item = get_object_or_404(Item, pk=pk)
+    serializer = ListingRequestSerializer(data=request.data)
+    if serializer.is_valid():
+        try:
+            listing = item.make_buy_listing(request.user,
+                                            count=serializer.data['count'],
+                                            price=serializer.data['price'])
+            return Response(ListingSerializer(listing).data)
+        except FailedToCreateListingError as e:
+            return Response({'error': e.msg}, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def item_buy(request, pk):
+    item = get_object_or_404(Item, pk=pk)
+    serializer = ItemBuyRequestSerializer(data=request.data)
+    if serializer.is_valid():
+        try:
+            result = item.make_buy_transaction(request.user, serializer.data['count'])
+            return Response(result)
+        except FailedToMakeTransactionError as e:
+            return Response({'error': e.msg}, status=status.HTTP_400_BAD_REQUEST)
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
