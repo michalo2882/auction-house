@@ -5,6 +5,7 @@ from . import views
 
 router = routers.DefaultRouter()
 router.register('items', views.ItemViewSet)
+router.register('inventory', views.InventoryItemViewSet, basename='inventory')
 
 app_name = 'api'
 urlpatterns = [

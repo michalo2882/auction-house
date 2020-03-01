@@ -18,19 +18,21 @@ class WalletSerializer(serializers.ModelSerializer):
 class ItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
-        fields = ['name']
+        fields = ['id', 'name']
 
 
 class InventoryItemSerializer(serializers.ModelSerializer):
+    item = ItemSerializer()
+
     class Meta:
         model = InventoryItem
-        fields = ['user', 'item', 'count', 'description']
+        fields = ['id', 'user', 'item', 'count', 'description']
 
 
 class ListingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Listing
-        fields = ['item', 'count', 'price', 'direction', 'submitter', 'description']
+        fields = ['id', 'item', 'count', 'price', 'direction', 'submitter', 'description']
 
 
 class SellRequestSerializer(serializers.Serializer):

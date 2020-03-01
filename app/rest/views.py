@@ -1,9 +1,10 @@
-from rest_framework import permissions, mixins, status
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework import permissions, mixins, status, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework.viewsets import GenericViewSet
 
+from app.rest.permissions import IsOwner
 from app.rest.serializers import *
 
 
@@ -22,10 +23,11 @@ def dashboard(request):
     })
 
 
+@csrf_exempt
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def inventory_sell(request, pk):
-    inventory_item = get_object_or_404(InventoryItem, pk=pk)
+    inventory_item = get_object_or_404(InventoryItem, pk=pk, user=request.user)
     serializer = SellRequestSerializer(data=request.data)
     if serializer.is_valid():
         listing = inventory_item.make_sell_listing(serializer.data['count'],
@@ -35,8 +37,14 @@ def inventory_sell(request, pk):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ItemViewSet(mixins.RetrieveModelMixin,
-                  mixins.ListModelMixin,
-                  GenericViewSet):
+class ItemViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Item.objects.all()
     serializer_class = ItemSerializer
+
+
+class InventoryItemViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = InventoryItemSerializer
+    permission_classes = [permissions.IsAuthenticated, IsOwner]
+
+    def get_queryset(self):
+        return InventoryItem.objects.filter(user=self.request.user)
