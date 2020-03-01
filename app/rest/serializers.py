@@ -35,6 +35,6 @@ class ListingSerializer(serializers.ModelSerializer):
         fields = ['id', 'item', 'count', 'price', 'direction', 'submitter', 'description']
 
 
-class SellRequestSerializer(serializers.Serializer):
+class ListingRequestSerializer(serializers.Serializer):
     count = serializers.IntegerField()
     price = serializers.IntegerField()

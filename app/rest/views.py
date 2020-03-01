@@ -23,16 +23,21 @@ def dashboard(request):
     })
 
 
-@csrf_exempt
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def inventory_sell(request, pk):
     inventory_item = get_object_or_404(InventoryItem, pk=pk, user=request.user)
-    serializer = SellRequestSerializer(data=request.data)
+    serializer = ListingRequestSerializer(data=request.data)
     if serializer.is_valid():
-        listing = inventory_item.make_sell_listing(serializer.data['count'],
-                                                   serializer.data['price'])
-        return Response(ListingSerializer(listing).data)
+        try:
+            listing = inventory_item.make_sell_listing(serializer.data['count'],
+                                                       serializer.data['price'])
+            return Response(ListingSerializer(listing).data)
+        except FailedToCreateListingError as e:
+            return Response({'error': e.msg}, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
