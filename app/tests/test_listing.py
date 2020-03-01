@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 
 from app.errors import InvalidTransactionError
-from app.models import Item, Listing
+from app.models import Item, Listing, Wallet, InventoryItem
 
 
 class ListingTests(TestCase):
@@ -34,3 +34,25 @@ class ListingTests(TestCase):
                                          submitter=self.user)
         listing.process_purchase(5)
         self.assertEqual(0, Listing.objects.all().count())
+
+
+class CancelListingTests(TestCase):
+    def setUp(self):
+        self.item = Item.objects.create(name='sword')
+        self.user = User.objects.create_user(username='ben', password='abc')
+
+    def test_cancel_buy_listing(self):
+        listing = Listing.objects.create(item=self.item, count=5, price=10, submitter=self.user,
+                                         direction=Listing.Direction.BUY)
+        listing.cancel()
+        self.assertEqual(0, Listing.objects.count())
+        self.assertEqual(50, Wallet.get_users_wallet(self.user).coins)
+        self.assertEqual(0, InventoryItem.objects.count())
+
+    def test_cancel_sell_listing(self):
+        listing = Listing.objects.create(item=self.item, count=5, price=10, submitter=self.user,
+                                         direction=Listing.Direction.SELL)
+        listing.cancel()
+        self.assertEqual(0, Listing.objects.count())
+        self.assertEqual(0, Wallet.get_users_wallet(self.user).coins)
+        self.assertEqual(5, InventoryItem.objects.get(user=self.user, item=self.item).count)

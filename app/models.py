@@ -163,3 +163,12 @@ class Listing(models.Model):
             self.delete()
         else:
             self.save()
+
+    @transaction.atomic
+    def cancel(self):
+        if self.direction == Listing.Direction.BUY:
+            wallet = Wallet.get_users_wallet(self.submitter)
+            wallet.add(self.price * self.count)
+        else:
+            self.item.add_to_user_inventory(self.submitter, self.count)
+        self.delete()

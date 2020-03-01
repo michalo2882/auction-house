@@ -38,6 +38,14 @@ def inventory_sell(request, pk):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def listing_cancel(request, pk):
+    listing = get_object_or_404(Listing, pk=pk, submitter=request.user)
+    listing.cancel()
+    return Response({'status': 'ok'})
+
+
 @api_view(['GET'])
 def item_listings(request, pk):
     item = get_object_or_404(Item, pk=pk)
