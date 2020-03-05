@@ -1,5 +1,7 @@
+.git
 __pycache__
 db.sqlite3
 .idea
 env/
 Dockerfile
+/data
