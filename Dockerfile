@@ -3,12 +3,12 @@ FROM python:3.8-alpine
 RUN mkdir /app
 WORKDIR /app
 
-RUN apk add --update alpine-sdk openssl-dev libffi-dev openssl libffi
+RUN apk add --update alpine-sdk openssl-dev libffi-dev postgresql-dev openssl libffi postgresql-libs
 
 ADD requirements.txt /app
 RUN pip install -r requirements.txt
 
-RUN apk del alpine-sdk openssl-dev libffi-dev
+RUN apk del alpine-sdk openssl-dev libffi-dev postgresql-dev
 
 ADD . /app
 

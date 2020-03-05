@@ -2,3 +2,4 @@ django
 django-debug-toolbar
 djangorestframework
 daphne
+psycopg2
